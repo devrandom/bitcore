@@ -3,6 +3,7 @@
 var chai = chai || require('chai');
 var bitcore = bitcore || require('../bitcore');
 var buffertools = require('buffertools');
+buffertools.extend();
 
 var should = chai.should();
 
@@ -15,6 +16,9 @@ var base58Check = base58.base58Check;
 var Address = bitcore.Address;
 var networks = bitcore.networks;
 var WalletKey = bitcore.WalletKey;
+var Buffers = require('buffers');
+var m = bitcore['Buffers.monkey'] || require('../Buffers.monkey');
+m.patch(Buffers);
 
 describe('Miscelaneous stuff', function() {
   it('should initialze the config object', function() {
@@ -23,6 +27,18 @@ describe('Miscelaneous stuff', function() {
   it('should initialze the log object', function() {
     should.exist(bitcore.log);
   });
+  it('should initialze the network object', function() {
+    should.exist(networks);
+    var nets = [networks.livenet, networks.testnet];
+    for (var i = 0; i < 2; i++) {
+      var net = nets[i];
+      should.exist(net.addressVersion);
+      should.exist(net.privKeyVersion);
+      should.exist(net.P2SHVersion);
+      should.exist(net.bip32publicVersion);
+      should.exist(net.bip32privateVersion);
+    }
+  });
   it('should initialze the const object', function() {
     should.exist(bitcore.const);
   });
@@ -30,8 +46,39 @@ describe('Miscelaneous stuff', function() {
     should.exist(bitcore.Deserialize);
     should.exist(bitcore.Deserialize.intFromCompact);
   });
+  it('should initialze the Buffer class', function() {
+    should.exist(bitcore.Buffer);
+  });
 
 
+  describe('Buffers monkey patch', function() {
+    var bufs;
+    beforeEach(function() {
+      bufs = new Buffers();
+      bufs.push(new Buffer('aaaaaa', 'hex'));
+      bufs.push(new Buffer('bbbb', 'hex'));
+      bufs.push(new Buffer('cc', 'hex'));
+    });
+    it('should monkey patch the Buffers class', function() {
+      should.exist(bufs.skip);
+    });
+    it('should work for 0', function() {
+      bufs.skip(0);
+      bufs.toBuffer().toHex().should.equal('aaaaaabbbbcc');
+    });
+    it('should work for length', function() {
+      bufs.skip(bufs.length);
+      bufs.toBuffer().toHex().should.equal('');
+    });
+    it('should work for middle values', function() {
+      bufs.skip(4);
+      bufs.toBuffer().toHex().should.equal('bbcc');
+      bufs.skip(1);
+      bufs.toBuffer().toHex().should.equal('cc');
+      bufs.skip(1);
+      bufs.toBuffer().toHex().should.equal('');
+    });
+  });
   // bignum
   it('should initialze the bignum object', function() {
     should.exist(bitcore.bignum);
@@ -122,7 +169,7 @@ describe('Miscelaneous stuff', function() {
           a.network().should.equal(network);
         });
         it('should generate correctly from hex', function() {
-          var version = shouldBeScript ? network.addressScript : network.addressPubkey;
+          var version = shouldBeScript ? network.P2SHVersion : network.addressVersion;
           var b = new Address(version, new Buffer(hexPayload, 'hex'));
           b.toString().should.equal(b58);
         });

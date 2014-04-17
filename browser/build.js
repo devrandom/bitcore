@@ -23,31 +23,31 @@ var pack = function (params) {
 };
 
 var modules = [
-  'Address',
-  'BIP32',
-  'Block',
-  'Bloom',
-  'Buffers.monkey',
-  'Connection',
-  'Deserialize',
   'Gruntfile',
-  'Number.monkey',
-  'Opcode',
-  'Peer',
-  'PeerManager',
-  'PrivateKey',
-  'RpcClient',
-  'Key',
-  'Point',
-  'SIN',
-  'SINKey',
-  'Script',
-  'ScriptInterpreter',
-  'Sign',
-  'Transaction',
-  'TransactionBuilder',
-  'Wallet',
-  'WalletKey',
+  'lib/Address',
+  'lib/BIP32',
+  'lib/Block',
+  'lib/Bloom',
+  'lib/Connection',
+  'lib/Deserialize',
+  'lib/Opcode',
+  'lib/Peer',
+  'lib/PeerManager',
+  'lib/PrivateKey',
+  'lib/RpcClient',
+  'lib/Key',
+  'lib/Point',
+  'lib/SIN',
+  'lib/SINKey',
+  'lib/Script',
+  'lib/ScriptInterpreter',
+  'lib/Sign',
+  'lib/Transaction',
+  'lib/TransactionBuilder',
+  'lib/Wallet',
+  'lib/WalletKey',
+  'patches/Buffers.monkey',
+  'patches/Number.monkey',
   'config',
   'const',
   'networks',
@@ -64,7 +64,10 @@ var createBitcore = function(opts) {
   opts.dir = opts.dir || '';
 
   // concat browser vendor files
-  exec('cd ' + opts.dir + 'browser; sh concat.sh', puts);
+  var cwd = process.cwd();
+  process.chdir(opts.dir + 'browser');
+  exec('sh concat.sh', puts);
+  process.chdir(cwd);
 
   if (!opts.includeall && (!opts.submodules || opts.submodules.length === 0)) {
     if (!opts.stdout) console.log('Must use either -s or -a option. For more info use the --help option');
@@ -97,6 +100,9 @@ var createBitcore = function(opts) {
   });
   b.require(opts.dir + 'base58-native', {
     expose: 'base58-native'
+  });
+  b.require(opts.dir + 'buffers', {
+    expose: 'buffers'
   });
   b.require('./' + opts.dir + 'bitcore', {
     expose: 'bitcore'

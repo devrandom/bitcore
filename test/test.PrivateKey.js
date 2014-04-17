@@ -25,7 +25,7 @@ describe('PrivateKey', function() {
   it('should convert hex testnet private key with compressed public key to base58check format', function() {
     var hex = 'b9f4892c9e8282028fea1d2667c4dc5213564d41fc5783896a0d843fc15089f3';
     var buf = new Buffer(hex, 'hex');
-    var privkey = new PrivateKey(networks.testnet.keySecret, buf, true);
+    var privkey = new PrivateKey(networks.testnet.privKeyVersion, buf, true);
 
     privkey.as('base58').should.equal('cTpB4YiyKiBcPxnefsDpbnDxFDffjqJob8wGCEDXxgQ7zQoMXJdH');
   });
@@ -47,6 +47,13 @@ describe('PrivateKey', function() {
     a.network().name.should.equal('livenet');
     var a = new PrivateKey('5JZsbYcnYN8Dz2YeSLZr6aswrVevedMUSFWxpie6SPpYRb2E4Gi');
     a.network().name.should.equal('livenet');
+  });
+
+  describe('#isValid', function() {
+    it('should detect this private key as valid', function() {
+      var privKey = new PrivateKey('5JQkUX6RNQC91xv4Www6Cgbxb6Eri6WBJjtPGqwfXVKBzT37cAf');
+      privKey.isValid().should.equal(true);
+    });
   });
  
 });
